@@ -23,6 +23,7 @@ SITE = os.environ.get("MATRIX_SITE", "https://argolink.io").rstrip("/")
 CATALOG_PATH = "/api/catalog/v1/models?category=chat&sort=provider&page_size=100"
 PROTOCOLS = ("/v1/messages", "/v1/chat/completions", "/v1/responses")
 DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "endpoints.json")
+USER_AGENT = "claude-api-bridge/1.0"  # some edges refuse urllib's default agent string
 
 _BLOCK = re.compile(r'<div class="model-api-endpoints".*?</ul>', re.S)
 _ITEM = re.compile(
@@ -32,7 +33,7 @@ _ITEM = re.compile(
 
 
 def fetch(url: str, timeout: float = 30) -> str:
-    request = urllib.request.Request(url, headers={"User-Agent": "endpoint-matrix/1.0"})
+    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(request, timeout=timeout) as response:
         return response.read().decode("utf-8", errors="replace")
 

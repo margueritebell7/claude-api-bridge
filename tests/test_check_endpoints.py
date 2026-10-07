@@ -1,4 +1,5 @@
 """Offline tests for check_endpoints.py: page fragments stand in for the network."""
+import io
 import json
 import os
 import sys
@@ -84,3 +85,25 @@ def test_shipped_data_file_is_consistent():
         assert natives == [model["native"]], model_id
         if model["vendor"] == "openai":
             assert model["protocols"]["/v1/messages"] is None, model_id
+
+
+class FakeResponse(io.BytesIO):
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
+
+
+def test_fetch_sends_an_explicit_user_agent(monkeypatch):
+    seen = {}
+
+    def urlopen(request, timeout=None):
+        seen["agent"] = request.get_header("User-agent")
+        seen["url"] = request.full_url
+        return FakeResponse(b"<html></html>")
+
+    monkeypatch.setattr(check_endpoints.urllib.request, "urlopen", urlopen)
+    check_endpoints.fetch("https://argolink.io/en/models/glm-5.3")
+    assert seen["agent"] == "claude-api-bridge/1.0"
+    assert seen["url"] == "https://argolink.io/en/models/glm-5.3"
