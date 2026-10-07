@@ -1,7 +1,5 @@
 __pycache__/
 *.py[cod]
-.env
-.env.*
-!.env.example
+.pytest_cache/
 node_modules/
-dist/
+.env
